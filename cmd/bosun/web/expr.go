@@ -55,7 +55,8 @@ func Expr(t miniprofiler.Timer, w http.ResponseWriter, r *http.Request) (v inter
 				return nil, fmt.Errorf("Expext variables to be of form `$foo = something`")
 			}
 			name := strings.Trim(parts[0], " \t")
-			vars[name] = schedule.Conf.Expand(parts[1], vars, false)
+			vars[name] = strings.Trim(schedule.Conf.Expand(parts[1], vars, false), " \t")
+			log.Println(name, vars[name])
 		}
 	}
 	log.Println("E", expression)
