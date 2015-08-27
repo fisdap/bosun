@@ -3,11 +3,13 @@ package web
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/mail"
 	"net/url"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -26,8 +28,38 @@ import (
 // and then 5m from now you query -10min to -5m you'll get the same cached data, including the incomplete last points
 var cacheObj = cache.New(100)
 
-func Expr(t miniprofiler.Timer, w http.ResponseWriter, r *http.Request) (interface{}, error) {
-	e, err := expr.New(r.FormValue("q"), schedule.Conf.Funcs())
+func Expr(t miniprofiler.Timer, w http.ResponseWriter, r *http.Request) (v interface{}, err error) {
+	defer func() {
+		if pan := recover(); pan != nil {
+			v = nil
+			err = fmt.Errorf("%v", pan)
+		}
+	}()
+	text, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return nil, err
+	}
+	lines := strings.Split(string(text), "\n")
+	var expression string
+	vars := map[string]string{}
+	for i, line := range lines {
+		line = strings.Trim(line, " \t")
+		if line == "" {
+			continue
+		}
+		if i == len(lines)-1 {
+			expression = schedule.Conf.Expand(line, vars, false)
+		} else if line[0] == '$' {
+			parts := strings.SplitN(line, "=", 2)
+			if len(parts) != 2 {
+				return nil, fmt.Errorf("Expext variables to be of form `$foo = something`")
+			}
+			name := strings.Trim(parts[0], " \t")
+			vars[name] = schedule.Conf.Expand(parts[1], vars, false)
+		}
+	}
+	log.Println("E", expression)
+	e, err := expr.New(expression, schedule.Conf.Funcs())
 	if err != nil {
 		return nil, err
 	}
