@@ -42,7 +42,7 @@
 	<div class="col-sm-12">
 		<form>
 		<div class="form-group">
-			<textarea id="exprTextArea" class="form-control" ng-model="expr" ng-blur="set()" ng-init="eval()" elastic></textarea>
+			<textarea id="exprTextArea" class="form-control" ng-model="expr" ng-blur="set()" ng-keydown="keydown($event)" ng-init="eval()" elastic></textarea>
 		</div>
 		</form>
 		<form class="form-inline">

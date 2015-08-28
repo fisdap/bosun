@@ -1541,6 +1541,11 @@ bosunControllers.controller('ExprCtrl', ['$scope', '$http', '$location', '$route
             });
             return graph;
         }
+        $scope.keydown = function ($event) {
+            if ($event.shiftKey && $event.keyCode == 13) {
+                $scope.set();
+            }
+        };
     }]);
 var TagSet = (function () {
     function TagSet() {

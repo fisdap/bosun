@@ -89,4 +89,10 @@ bosunControllers.controller('ExprCtrl', ['$scope', '$http', '$location', '$route
 		});
 		return graph;
 	}
+	$scope.keydown = function($event: any) {
+		if ($event.shiftKey && $event.keyCode == 13) {
+			$scope.set();
+		}
+	};
+
 }]);
