@@ -409,9 +409,9 @@ bosunControllers.controller('ConfigCtrl', ['$scope', '$http', '$location', '$rou
                 '	</table>`\n' +
                 '}\n\n';
             var expression = atob(expr);
-            var lines = expression.split("\n   ");
+            var lines = expression.split("\n");
             lines[lines.length - 1] = "crit = " + lines[lines.length - 1];
-            expression = lines.join("\n");
+            expression = lines.join("\n    ");
             text += 'alert ' + newAlertName + ' {\n' +
                 '	template = ' + newAlertName + '\n' +
                 '	' + expression + '\n' +
