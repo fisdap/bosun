@@ -85,7 +85,7 @@ bosunControllers.controller('ConfigCtrl', ['$scope', '$http', '$location', '$rou
 			'	</table>`\n' +
 			'}\n\n';
 		var expression = atob(expr);
-		var lines = expression.split("\n");
+		var lines = expression.split("\n").map(function(l){return l.trim();});
     	lines[lines.length-1] = "crit = " + lines[lines.length-1]
     	expression = lines.join("\n    ");
 		text += 'alert '+newAlertName+' {\n' +
