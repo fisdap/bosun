@@ -3,10 +3,10 @@ package web
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/mail"
 	"net/url"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -39,27 +39,29 @@ func Expr(t miniprofiler.Timer, w http.ResponseWriter, r *http.Request) (v inter
 	if err != nil {
 		return nil, err
 	}
-	lines := strings.Split(string(text), "\n")
+
+	lines := strings.Split(strings.TrimSpace(string(text)), "\n")
 	var expression string
 	vars := map[string]string{}
+	varRegex := regexp.MustCompile(`(\$\w+)\s*=(.*)`)
 	for i, line := range lines {
-		line = strings.Trim(line, " \t")
+		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
 		}
+		// last line is expression we care about
 		if i == len(lines)-1 {
 			expression = schedule.Conf.Expand(line, vars, false)
-		} else if line[0] == '$' {
-			parts := strings.SplitN(line, "=", 2)
-			if len(parts) != 2 {
-				return nil, fmt.Errorf("Expext variables to be of form `$foo = something`")
+		} else { // must be a variable declatation
+			matches := varRegex.FindStringSubmatch(line)
+			if len(matches) == 0 {
+				return nil, fmt.Errorf("Expext all lines before final expression to be variable declarations of form `$foo = something`")
 			}
-			name := strings.Trim(parts[0], " \t")
-			vars[name] = strings.Trim(schedule.Conf.Expand(parts[1], vars, false), " \t")
-			log.Println(name, vars[name])
+			name := strings.TrimSpace(matches[1])
+			value := strings.TrimSpace(matches[2])
+			vars[name] = schedule.Conf.Expand(value, vars, false)
 		}
 	}
-	log.Println("E", expression)
 	e, err := expr.New(expression, schedule.Conf.Funcs())
 	if err != nil {
 		return nil, err
