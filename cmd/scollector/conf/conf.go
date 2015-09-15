@@ -49,6 +49,7 @@ type Conf struct {
 	// namespace
 	ElasticIndexFilters []string
 	RabbitMQ            []RabbitMQ
+	Nginx               Nginx
 }
 
 type HAProxy struct {
@@ -131,4 +132,8 @@ type RabbitMQ struct {
 type Github struct {
 	Repo  string
 	Token string
+}
+
+type Nginx struct {
+	Url string
 }
